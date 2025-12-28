@@ -53,20 +53,21 @@ COLORES_MDF = {
 
 PRECIOS_TABLAS = {
     "Pino": [
-        (1, 9, 145, "Precio menudeo"),
-        (10, 24, 125, "Buen margen para empezar"),
-        (25, 49, 110, "Precio distribuidor"),
-        (50, 99, 95, "Precio preferente"),
-        (100, 9999, 85, "Precio volumen"),
+        (1, 9, 145, 95, "Precio menudeo"),
+        (10, 24, 125, 75, "Buen margen para empezar"),
+        (25, 49, 110, 60, "Precio de distribuidor"),
+        (50, 99, 95, 45, "Precio preferente"),
+        (100, 9999, 85, 35, "Precio volumen"),
     ],
     "Cedro": [
-        (1, 9, 345, "Precio menudeo"),
-        (10, 24, 300, "Buen margen para empezar"),
-        (25, 49, 265, "Precio distribuidor"),
-        (50, 99, 225, "Precio preferente"),
-        (100, 9999, 205, "Precio volumen"),
+        (1, 9, 345, 225, "Precio menudeo"),
+        (10, 24, 300, 180, "Buen margen para empezar"),
+        (25, 49, 265, 145, "Precio de distribuidor"),
+        (50, 99, 225, 105, "Precio preferente"),
+        (100, 9999, 205, 85, "Precio volumen"),
     ]
 }
+
 
 # =============================
 # SIDEBAR
@@ -171,28 +172,77 @@ if opcion == "Closets":
 # ======================================================
 # =================== TABLAS PICAR =====================
 # ======================================================
-else:
+elif opcion == "Tablas de picar":
 
-    st.title("Tablas de picar")
+    st.title("Tablas de picar – Precios por volumen")
 
-    c1, c2, c3 = st.columns(3)
+    col1, col2 = st.columns(2)
 
-    madera = c1.selectbox("Madera", PRECIOS_TABLAS.keys())
-    cantidad = c2.number_input("Cantidad", 1, 500, 10)
-
-    precio_unit = msg = ""
-
-    for a, b, p, t in PRECIOS_TABLAS[madera]:
-        if a <= cantidad <= b:
-            precio_unit = p
-            msg = t
-            break
-
-    total = precio_unit * cantidad
-
-    with c3:
+    # =============================
+    # COLUMNA 1: MADERA + IMAGEN
+    # =============================
+    with col1:
         st.markdown("<div class='card'>", unsafe_allow_html=True)
-        st.markdown(f"<div class='precio'>${total:,.0f}</div>", unsafe_allow_html=True)
-        st.markdown(f"<div class='sub'>{cantidad} piezas · {madera}</div>", unsafe_allow_html=True)
-        st.success(msg)
+
+        madera = st.selectbox("Madera", PRECIOS_TABLAS.keys())
+
+        # Imagen según madera
+        if madera == "Pino":
+            st.image("pino.png", width="stretch")
+        elif madera == "Cedro":
+            st.image("cedro.png", width="stretch")
+
         st.markdown("</div>", unsafe_allow_html=True)
+
+    # =============================
+    # COLUMNA 2: CANTIDAD + PRECIO
+    # =============================
+    with col2:
+        st.markdown("<div class='card'>", unsafe_allow_html=True)
+
+        cantidad = st.number_input("Cantidad", 1, 500, 10)
+
+        precio_unit = utilidad = msg = 0
+
+        for a, b, p, u, t in PRECIOS_TABLAS[madera]:
+            if a <= cantidad <= b:
+                precio_unit = p
+                utilidad = u
+                msg = t
+                break
+
+        total = precio_unit * cantidad
+        margen = utilidad / precio_unit * 100 if precio_unit else 0
+
+        st.markdown(
+            f"<div class='precio'>${total:,.0f} MXN</div>",
+            unsafe_allow_html=True
+        )
+        st.markdown(
+            f"<div class='sub'>{cantidad} piezas · ${precio_unit} c/u · Margen {margen:.0f}%</div>",
+            unsafe_allow_html=True
+        )
+
+        st.success(msg)
+
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    # =============================
+    # TABLA DE REFERENCIA
+    # =============================
+    st.subheader("📊 Precios de referencia por volumen")
+
+    tabla_ref = []
+    for a, b, p, u, t in PRECIOS_TABLAS[madera]:
+        rango = f"{a}–{b if b < 9999 else '+'}"
+        tabla_ref.append({
+            "Cantidad": rango,
+            "Precio unitario ($)": p,
+            "Utilidad ($)": u,
+            "Mensaje": t
+        })
+
+    st.dataframe(
+        tabla_ref,
+        width="stretch"
+    )
