@@ -72,7 +72,12 @@ PRECIOS_TABLAS = {
 # SIDEBAR
 # =============================
 with st.sidebar:
-    opcion = st.radio("Servicio", ["Closets", "Tablas de picar"])
+    st.image("logo_madera_precisa.png", width=240)
+    opcion = st.radio(
+        "Servicio",
+        ["Closets", "Tablas de picar"]
+    )
+
 
 # ======================================================
 # ======================= CLOSETS =======================
